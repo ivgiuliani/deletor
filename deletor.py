@@ -4,7 +4,11 @@ import sys
 import os
 import glob
 import time
+import logging
 from pathlib import Path
+
+logging.basicConfig(level=logging.INFO)
+
 
 def scan_path(path: Path):
     for entry in os.scandir(path):
@@ -19,17 +23,20 @@ def delete(base_dir: Path, dry_run: bool, delete_after_seconds: int) -> None:
             entry_life_seconds = int(time.time() - os.path.getmtime(entry.path))
 
             if entry_life_seconds >= delete_after_seconds:
+                logging.info("Deleting %s" % entry.path)
                 if not dry_run:
                     os.remove(entry.path)
         elif entry.is_dir():
             dir_path = Path(entry.path)
             is_empty = len(list(dir_path.rglob('*'))) == 0
             if is_empty:
+                logging.info("Deleting empty directory %s" % entry.path)
                 if not dry_run:
                     dir_path.rmdir()
 
 
 def run(base_dir: Path, dry_run: bool, delete_after_seconds: int, check_interval_seconds: int = 60) -> None:
+    logging.info("Checking %s for files every %d seconds" % (base_dir, check_interval_seconds))
     while True:
         delete(base_dir, dry_run, delete_after_seconds)
         if check_interval_seconds <= 0:
