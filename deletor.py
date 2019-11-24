@@ -22,9 +22,9 @@ def scan_path(path: Path):
 def delete(base_dir: Path, dry_run: bool, delete_after_seconds: int) -> None:
     for entry in scan_path(base_dir):
         if entry.is_file():
-            entry_life_seconds = int(time.time() - os.path.getmtime(entry.path))
+            entry_seconds = int(time.time() - os.path.getmtime(entry.path))
 
-            if entry_life_seconds >= delete_after_seconds:
+            if entry_seconds >= delete_after_seconds:
                 logging.info("Deleting %s" % entry.path)
                 if not dry_run:
                     os.remove(entry.path)
@@ -37,10 +37,15 @@ def delete(base_dir: Path, dry_run: bool, delete_after_seconds: int) -> None:
                     dir_path.rmdir()
 
 
-def run(base_dir: Path, dry_run: bool, delete_after_seconds: int, check_interval_seconds: int) -> None:
+def run(base_dir: Path,
+        dry_run: bool,
+        delete_after_seconds: int,
+        check_interval_seconds: int) -> None:
     if dry_run:
         logging.info("DRY RUN ENABLED: no files will be deleted")
-    logging.info("Checking '%s' for files every %d seconds" % (base_dir, check_interval_seconds))
+    logging.info("Checking '%s' for files every %d seconds" % (
+        base_dir, check_interval_seconds
+    ))
 
     while True:
         logging.debug("Beginning new check")
@@ -54,13 +59,26 @@ def run(base_dir: Path, dry_run: bool, delete_after_seconds: int, check_interval
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("delete_after_seconds",
-            type=int,
-            help="Delete files in <root> after this many seconds from their creation")
-    parser.add_argument("root",
-            help="Recursively delete files under this directory")
-    parser.add_argument("--dry-run", help="do not actually delete anything", action="store_true")
-    parser.add_argument("--check-interval", help="how often to check for new files to be deleted (seconds)", type=int, default=60)
+    parser.add_argument(
+        "delete_after_seconds",
+        type=int,
+        help="Delete files after this many seconds from their creation"
+    )
+    parser.add_argument(
+        "root",
+        help="Recursively delete files under this directory"
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="do not actually delete anything"
+    )
+    parser.add_argument(
+        "--check-interval",
+        type=int,
+        default=60,
+        help="how often to check for new files to be deleted (seconds)"
+    )
 
     return parser.parse_args()
 
@@ -81,4 +99,3 @@ def main():
 
 if __name__ == "__main__":
     sys.exit(main())
-
