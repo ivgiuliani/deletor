@@ -37,14 +37,18 @@ def delete(base_dir: Path, dry_run: bool, delete_after_seconds: int) -> None:
                     dir_path.rmdir()
 
 
-def run(base_dir: Path, dry_run: bool, delete_after_seconds: int, check_interval_seconds: int = 60) -> None:
+def run(base_dir: Path, dry_run: bool, delete_after_seconds: int, check_interval_seconds: int) -> None:
     if dry_run:
         logging.info("DRY RUN ENABLED: no files will be deleted")
-    logging.info("Checking %s for files every %d seconds" % (base_dir, check_interval_seconds))
+    logging.info("Checking '%s' for files every %d seconds" % (base_dir, check_interval_seconds))
+
     while True:
+        logging.debug("Beginning new check")
+
         delete(base_dir, dry_run, delete_after_seconds)
         if check_interval_seconds <= 0:
             return
+
         time.sleep(check_interval_seconds)
 
 
@@ -56,6 +60,7 @@ def parse_args():
     parser.add_argument("root",
             help="Recursively delete files under this directory")
     parser.add_argument("--dry-run", help="do not actually delete anything", action="store_true")
+    parser.add_argument("--check-interval", help="how often to check for new files to be deleted (seconds)", type=int, default=60)
 
     return parser.parse_args()
 
@@ -64,7 +69,12 @@ def main():
     args = parse_args()
 
     try:
-        run(Path(args.root), dry_run=args.dry_run, delete_after_seconds=args.delete_after_seconds)
+        run(
+            Path(args.root),
+            dry_run=args.dry_run,
+            delete_after_seconds=args.delete_after_seconds,
+            check_interval_seconds=args.check_interval
+        )
     except KeyboardInterrupt:
         pass
 
