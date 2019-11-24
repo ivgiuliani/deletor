@@ -57,7 +57,10 @@ def main(args):
         delete_seconds = int(args[1])
         base_folder = Path(args[2])
 
-    run(base_folder, dry_run=dry_run, delete_after_seconds=delete_seconds)
+    try:
+        run(base_folder, dry_run=dry_run, delete_after_seconds=delete_seconds)
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == "__main__":
