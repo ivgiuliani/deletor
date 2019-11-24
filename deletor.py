@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
-import sys
-import os
-import glob
-import time
+import argparse
 import logging
+import os
+import sys
+import time
+
 from pathlib import Path
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -36,6 +38,8 @@ def delete(base_dir: Path, dry_run: bool, delete_after_seconds: int) -> None:
 
 
 def run(base_dir: Path, dry_run: bool, delete_after_seconds: int, check_interval_seconds: int = 60) -> None:
+    if dry_run:
+        logging.info("DRY RUN ENABLED: no files will be deleted")
     logging.info("Checking %s for files every %d seconds" % (base_dir, check_interval_seconds))
     while True:
         delete(base_dir, dry_run, delete_after_seconds)
@@ -44,25 +48,27 @@ def run(base_dir: Path, dry_run: bool, delete_after_seconds: int, check_interval
         time.sleep(check_interval_seconds)
 
 
-def main(args):
-    if len(args) == 1:
-        print("Usage: %s [--dry-run] <delete seconds> <base folder>" % args[0])
-        return False
-    if args[1] == "--dry-run":
-        dry_run = True
-        delete_seconds = int(args[2])
-        base_folder = Path(args[3])
-    else:
-        dry_run = False
-        delete_seconds = int(args[1])
-        base_folder = Path(args[2])
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("delete_after_seconds",
+            type=int,
+            help="Delete files in <root> after this many seconds from their creation")
+    parser.add_argument("root",
+            help="Recursively delete files under this directory")
+    parser.add_argument("--dry-run", help="do not actually delete anything", action="store_true")
+
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
 
     try:
-        run(base_folder, dry_run=dry_run, delete_after_seconds=delete_seconds)
+        run(Path(args.root), dry_run=args.dry_run, delete_after_seconds=args.delete_after_seconds)
     except KeyboardInterrupt:
         pass
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv))
+    sys.exit(main())
 
