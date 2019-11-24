@@ -29,6 +29,14 @@ def delete(base_dir: Path, dry_run: bool, delete_after_seconds: int) -> None:
                     dir_path.rmdir()
 
 
+def run(base_dir: Path, dry_run: bool, delete_after_seconds: int, check_interval_seconds: int = 60) -> None:
+    while True:
+        delete(base_dir, dry_run, delete_after_seconds)
+        if check_interval_seconds <= 0:
+            return
+        time.sleep(check_interval_seconds)
+
+
 def main(args):
     if len(args) == 1:
         print("Usage: %s [--dry-run] <delete seconds> <base folder>" % args[0])
@@ -42,7 +50,7 @@ def main(args):
         delete_seconds = int(args[1])
         base_folder = Path(args[2])
 
-    delete(base_folder, dry_run=dry_run, delete_after_seconds=delete_seconds)
+    run(base_folder, dry_run=dry_run, delete_after_seconds=delete_seconds)
 
 
 if __name__ == "__main__":
