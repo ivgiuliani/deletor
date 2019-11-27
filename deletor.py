@@ -43,8 +43,8 @@ def run(base_dir: Path,
         check_interval_seconds: int) -> None:
     if dry_run:
         logging.info("DRY RUN ENABLED: no files will be deleted")
-    logging.info("Checking '%s' for files every %d seconds" % (
-        base_dir, check_interval_seconds
+    logging.info("Checking '%s' for files every %d seconds [deletion policy: delete after %d seconds]" % (
+        base_dir, check_interval_seconds, delete_after_seconds
     ))
 
     while True:
