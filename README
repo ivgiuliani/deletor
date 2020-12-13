@@ -1,0 +1,5 @@
+# Deletor
+
+A simple substitute to logrotate to delete files older than a given time.
+The main use case is to mount a volume via docker and run this periodically
+as to remove stale files (e.g. rotated logs).
